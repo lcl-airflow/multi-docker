@@ -1,0 +1,22 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t hm3cheun/react-test -f ./client/Dockerfile.dev ./client
+script:
+    - docker run -e CI=true hm3cheun/react-test npm test
+
+after_success:
+    - docker build -t hm3cheun/multi-client ./client 
+    - docker build -t hm3cheun/multi-nginx ./nginx
+    - docker build -t hm3cheun/multi-server ./server
+    - docker build -t hm3cheun/multi-worker ./worker
+# push docker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push hm3cheun/multi-client
+    - docker push hm3cheun/multi-nginx
+    - docker push hm3cheun/multi-server
+    - docker push hm3cheun/multi-worker
+
+
